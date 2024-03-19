@@ -1,0 +1,156 @@
+# FED
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Shopping Cart</title>
+  </head>
+  <body>
+    <script>
+      function createElement(tag, classes = [], attributes = {}) {
+        const element = document.createElement(tag);
+        classes.forEach((className) => element.classList.add(className));
+        for (const attr in attributes) {
+          element.setAttribute(attr, attributes[attr]);
+        }
+        return element;
+      }
+
+      class ShoppingCart {
+        constructor() {
+          this.cart = {};
+          this.cartSection = this.createCartSection();
+        }
+
+        createCartSection() {
+          const cartSection = createElement("div", ["cart"]);
+          cartSection.style.marginTop = "20px";
+          cartSection.style.display = "none";
+
+          const h2 = createElement("h2");
+          h2.textContent = "Your Cart";
+          cartSection.appendChild(h2);
+
+          const cartItems = createElement("div", ["cart-items"]);
+          cartItems.id = "cart-items";
+          cartSection.appendChild(cartItems);
+
+          const totalParagraph = createElement("p");
+          totalParagraph.textContent = "Total: ₹";
+          const totalPriceSpan = createElement("span", [], { id: "total" });
+          totalParagraph.appendChild(totalPriceSpan);
+          cartSection.appendChild(totalParagraph);
+
+          return cartSection;
+        }
+
+        showCart() {
+          this.cartSection.style.display = "block";
+        }
+
+        addToCart(name, price) {
+          if (this.cart[name]) {
+            this.cart[name].quantity++;
+          } else {
+            this.cart[name] = {
+              name,
+              price,
+              quantity: 1,
+            };
+          }
+          this.displayCart();
+          this.showCart();
+        }
+
+        removeFromCart(name) {
+          if (this.cart[name].quantity > 1) {
+            this.cart[name].quantity--;
+          } else {
+            delete this.cart[name];
+          }
+          this.displayCart();
+        }
+
+        displayCart() {
+          const cartItemsContainer = document.getElementById("cart-items");
+          cartItemsContainer.innerHTML = "";
+
+          let total = 0;
+          for (const name in this.cart) {
+            const product = this.cart[name];
+            const cartItem = createElement("div", ["cart-item"]);
+
+            const productNameSpan = createElement("span");
+            productNameSpan.textContent = product.name;
+            cartItem.appendChild(productNameSpan);
+
+            const controlsDiv = createElement("div");
+            const removeButton = createElement("button", [
+              "remove-from-cart-btn",
+            ]);
+            removeButton.textContent = "-";
+            removeButton.onclick = () => this.removeFromCart(name);
+            const quantitySpan = createElement("span");
+            quantitySpan.textContent = product.quantity;
+            const addButton = createElement("button", ["add-to-cart-btn"]);
+            addButton.textContent = "+";
+            addButton.onclick = () => this.addToCart(name, product.price);
+            const totalPriceSpan = createElement("span");
+            totalPriceSpan.textContent = `(₹${(
+              product.price * product.quantity
+            ).toLocaleString()})`;
+
+            controlsDiv.appendChild(removeButton);
+            controlsDiv.appendChild(quantitySpan);
+            controlsDiv.appendChild(addButton);
+            cartItem.appendChild(controlsDiv);
+            cartItem.appendChild(totalPriceSpan);
+
+            cartItemsContainer.appendChild(cartItem);
+
+            total += product.price * product.quantity;
+          }
+          document.getElementById("total").textContent = total.toLocaleString();
+        }
+      }
+
+      const shoppingCart = new ShoppingCart();
+      const productsContainer = createElement("div", ["products-container"]);
+      productsContainer.id = "products-container";
+      productsContainer.style.display = "flex";
+      productsContainer.style.justifyContent = "center";
+      document.body.appendChild(productsContainer);
+
+      const productsData = [
+        { name: "Product 1", price: 189999, imgSrc: "images/Apple.jpg" },
+        { name: "Product 2", price: 350, imgSrc: "images/backcover.jpg" },
+        { name: "Product 3", price: 50000, imgSrc: "images/i.jpg" },
+      ];
+
+      productsData.forEach((product) => {
+        const productContainer = createElement("div", ["product-container"]);
+        const productHTML = `
+          <div class="product" data-price="${product.price}" data-name="${
+          product.name
+        }">
+            <img src="${product.imgSrc}" alt="${
+          product.name
+        }" style="max-width: 100%; max-height: 300px; object-fit: contain;" />
+            <h2>${product.name}</h2>
+            <p>Price: ₹${product.price.toLocaleString()}</p>
+            <button class="add-to-cart-btn">Add to Cart</button>
+          </div>
+        `;
+        productContainer.innerHTML = productHTML;
+        productsContainer.appendChild(productContainer);
+
+        productContainer
+          .querySelector(".add-to-cart-btn")
+          .addEventListener("click", () => {
+            shoppingCart.addToCart(product.name, product.price);
+          });
+      });
+
+      document.body.appendChild(shoppingCart.cartSection);
+    </script>
+  </body>
+</html>
